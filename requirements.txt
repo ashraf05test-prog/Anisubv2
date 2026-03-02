@@ -1,0 +1,12 @@
+flask
+gunicorn
+requests
+beautifulsoup4
+cloudscraper
+pyrogram==2.0.106
+tgcrypto
+deep-translator
+google-generativeai
+lxml
+yt-dlp
+ffmpeg-python
