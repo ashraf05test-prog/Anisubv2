@@ -15,6 +15,10 @@ FONTS = {
     'Noto Sans Bengali': 'https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSansBengali/NotoSansBengali-Regular.ttf',
     'Kalpurush': 'https://github.com/googlefonts/kalpurush/raw/main/fonts/ttf/Kalpurush.ttf',
     'SolaimanLipi': 'https://raw.githubusercontent.com/maateen/bangla-web-fonts/master/fonts/SolaimanLipi/SolaimanLipi.ttf',
+    'Hind Siliguri': 'https://github.com/googlefonts/hind/raw/main/fonts/Hind_Siliguri/HindSiliguri-Regular.ttf',
+    'Hind Siliguri Bold': 'https://github.com/googlefonts/hind/raw/main/fonts/Hind_Siliguri/HindSiliguri-Bold.ttf',
+    'Baloo Da 2': 'https://github.com/googlefonts/Baloo2/raw/main/fonts/ttf/BalooDa2-Regular.ttf',
+    'Baloo Da 2 Bold': 'https://github.com/googlefonts/Baloo2/raw/main/fonts/ttf/BalooDa2-Bold.ttf',
 }
 
 def setup_fonts():
@@ -81,25 +85,29 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         f.write(header + '\n'.join(events))
     return ass_path
 
-def apply_netflix_style(ass_path):
+def apply_netflix_style(ass_path, font_name=None, font_size=None, color=None, bg=None):
+    import re as _r
     try:
-        with open(ass_path, 'r', encoding='utf-8') as f:
-            c = f.read()
-        c = re.sub(
-            r'Style: Default,[^\n]+',
-            'Style: Default,Noto Sans Bengali,28,&H00FFFFFF,&H000000FF,&H00000000,&H64000000,0,0,0,0,100,100,0,0,3,0,0,2,20,20,25,1',
-            c
-        )
-        with open(ass_path, 'w', encoding='utf-8') as f:
-            f.write(c)
-    except:
-        pass
+        c = open(ass_path, encoding='utf-8').read()
+        ex = _r.search(r'Style: Default,([^\n]+)', c)
+        ex = ex.group(1).split(',') if ex else []
+        fn = font_name or (ex[0] if ex else 'Noto Sans Bengali')
+        fs = str(font_size or (ex[1].strip() if len(ex)>1 else '28'))
+        cm = {'White':'&H00FFFFFF','white':'&H00FFFFFF','Yellow':'&H0000FFFF','yellow':'&H0000FFFF','Cyan':'&H00FFFF00','cyan':'&H00FFFF00'}
+        pc = cm.get(color,'&H00FFFFFF') if color else (ex[2].strip() if len(ex)>2 else '&H00FFFFFF')
+        if bg in ('Semi-transparent','semi'):
+            bs,bc = 3,'&H99000000'
+        elif bg in ('Black box','black'):
+            bs,bc = 3,'&HDD000000'
+        else:
+            bs,bc = 1,'&H00000000'
+        style = ','.join(['Style: Default',fn,fs,pc,'&H000000FF','&H00141414',bc,'0','0','0','0','100','105','0.3','0',str(bs),'2.5','1.5','2','15','15','28','1'])
+        c = _r.sub(r'Style: Default,[^\n]+', style, c)
+        open(ass_path,'w',encoding='utf-8').write(c)
+        print(f'[Style] {fn} {fs}px {color} {bg}')
+    except Exception as e:
+        print(f'[Style] Error: {e}')
 
-app = Flask(__name__)
-os.makedirs('/tmp/anisub', exist_ok=True)
-tasks = {}
-
-@app.route('/')
 def index():
     return render_template('index.html')
 
@@ -284,7 +292,7 @@ def process_task(task_id, data):
             conv = subprocess.run(['ffmpeg','-y','-i',sub_file_path,ass_file_path], capture_output=True, text=True)
             if conv.returncode != 0 or not os.path.exists(ass_file_path):
                 srt_to_ass(sub_file_path, ass_file_path)
-            apply_netflix_style(ass_file_path)
+            apply_netflix_style(ass_file_path, font_name=data.get("font_name"), font_size=data.get("font_size"), color=data.get("color"), bg=data.get("bg"))
             log("Subtitle ready (Netflix style) ✨", "✅")
 
         task['progress'] = 30
