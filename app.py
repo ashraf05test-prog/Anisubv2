@@ -55,15 +55,16 @@ FONT_CANDIDATES = {
         ],
     },
     'kalpurush': {
-        'display': 'Kalpurush',
-        'family': 'Kalpurush',
-        'paths': ['/app/fonts/Kalpurush.ttf'],
-    },
-    'solaimanlipi': {
-        'display': 'SolaimanLipi',
-        'family': 'SolaimanLipi',
-        'paths': ['/app/fonts/SolaimanLipi.ttf'],
-    },
+    'display': 'Kalpurush',
+    'family': 'Kalpurush',
+    'paths': ['/app/fonts/Kalapurush.ttf'],
+},
+'solaimanlipi': {
+    'display': 'SolaimanLipi',
+    'family': 'SolaimanLipi',
+    'paths': ['/app/fonts/SolaimanLipi.ttf'],
+},
+
 }
 
 
